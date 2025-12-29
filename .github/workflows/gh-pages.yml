@@ -1,0 +1,68 @@
+name: Deploy Nx App to GitHub Pages
+
+permissions:
+  contents: write
+  pages: write
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Nx app with correct base-href
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -e
+
+          APP_NAME="shop"
+
+          if [[ "$REPO_NAME" == *".github.io" ]]; then
+            BASEHREF="/"
+          else
+            BASEHREF="/$REPO_NAME/"
+          fi
+
+          echo "Building $APP_NAME with base-href: $BASEHREF"
+
+          npx nx build $APP_NAME --configuration=production --baseHref=$BASEHREF
+
+      - name: SPA 404 fallback
+        run: |
+          set -e
+          DIST_DIR="dist/apps/shop"
+
+          if [[ ! -f "$DIST_DIR/index.html" ]]; then
+            echo "index.html not found in $DIST_DIR"
+            exit 1
+          fi
+
+          cp "$DIST_DIR/index.html" "$DIST_DIR/404.html"
+          echo "SPA fallback created"
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist/apps/<app-name>
+          token: ${{ secrets.GITHUB_TOKEN }}
