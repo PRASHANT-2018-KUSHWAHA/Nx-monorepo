@@ -35,7 +35,7 @@ jobs:
         run: |
           set -e
 
-          APP_NAME=<app-name>
+          APP_NAME="shop"
 
           if [[ "$REPO_NAME" == *".github.io" ]]; then
             BASEHREF="/"
@@ -50,7 +50,7 @@ jobs:
       - name: SPA 404 fallback
         run: |
           set -e
-          DIST_DIR="dist/apps/<app-name>"
+          DIST_DIR="dist/apps/shop"
 
           if [[ ! -f "$DIST_DIR/index.html" ]]; then
             echo "index.html not found in $DIST_DIR"
