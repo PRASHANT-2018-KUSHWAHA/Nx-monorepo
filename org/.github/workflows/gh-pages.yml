@@ -1,6 +1,5 @@
-name: Deploy to GitHub Pages
+name: Deploy Nx App to GitHub Pages
 
-# Required permissions: allow the workflow to push to the repository and manage Pages
 permissions:
   contents: write
   pages: write
@@ -21,55 +20,49 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 18
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (with computed base-href)
+      - name: Build Nx app with correct base-href
         env:
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           set -e
-          REPO="$REPO_NAME"
-          if [[ "$REPO" == *".github.io" ]]; then
+
+          APP_NAME=<app-name>
+
+          if [[ "$REPO_NAME" == *".github.io" ]]; then
             BASEHREF="/"
           else
-            BASEHREF="/$REPO/"
+            BASEHREF="/$REPO_NAME/"
           fi
-          echo "Repository: $REPO"
-          echo "Using base-href: $BASEHREF"
-          npm run build -- --configuration production --base-href "$BASEHREF"
 
-      - name: Add SPA-friendly 404 fallback
+          echo "Building $APP_NAME with base-href: $BASEHREF"
+
+          npx nx build $APP_NAME --configuration=production --baseHref=$BASEHREF
+
+      - name: SPA 404 fallback
         run: |
           set -e
-          DIST_DIR="dist/art-gallery"
+          DIST_DIR="dist/apps/<app-name>"
+
           if [[ ! -f "$DIST_DIR/index.html" ]]; then
-            echo "index.html not found in: $DIST_DIR"
+            echo "index.html not found in $DIST_DIR"
             exit 1
           fi
-          # Copy the built index.html to 404.html so GitHub Pages serves the SPA on unknown routes
-          cp "$DIST_DIR/index.html" "$DIST_DIR/404.html"
-          echo "Created $DIST_DIR/404.html"
 
-      - name: Prune stale worktrees and show git info
-        run: |
-          set -e
-          echo "Git version: $(git --version)"
-          # Remove stale worktrees and show current list to avoid remove failures later
-          git worktree prune || true
-          git worktree list || true
-          # Show git status/debug info
-          git status --porcelain || true
-          git rev-parse --abbrev-ref HEAD || true
+          cp "$DIST_DIR/index.html" "$DIST_DIR/404.html"
+          echo "SPA fallback created"
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: dist/art-gallery
+          folder: dist/apps/<app-name>
           token: ${{ secrets.GITHUB_TOKEN }}
