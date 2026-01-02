@@ -45,7 +45,6 @@ jobs:
 
           echo "Building $APP_NAME with base-href: $BASEHREF"
 
-          # npx nx build $APP_NAME --configuration=production --baseHref=$BASEHREF
           npx nx run shop:build --configuration=production --baseHref=$BASEHREF
 
       - name: SPA 404 fallback
