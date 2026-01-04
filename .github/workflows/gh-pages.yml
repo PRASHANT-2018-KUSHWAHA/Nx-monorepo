@@ -40,7 +40,7 @@ jobs:
           if [[ "$REPO_NAME" == *".github.io" ]]; then
             BASEHREF="/"
           else
-            BASEHREF="/"
+            BASEHREF="/$REPO_NAME/"
           fi
 
           echo "Building $APP_NAME with base-href: $BASEHREF"
@@ -64,5 +64,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: dist/apps/<app-name>
+          folder: dist/apps/shop
           token: ${{ secrets.GITHUB_TOKEN }}
