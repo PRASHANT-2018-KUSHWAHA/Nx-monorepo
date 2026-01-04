@@ -40,7 +40,7 @@ jobs:
           if [[ "$REPO_NAME" == *".github.io" ]]; then
             BASEHREF="/"
           else
-            BASEHREF="/$REPO_NAME/"
+            BASEHREF="/"
           fi
 
           echo "Building $APP_NAME with base-href: $BASEHREF"
