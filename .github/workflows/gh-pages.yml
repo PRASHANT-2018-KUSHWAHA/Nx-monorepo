@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
       - name: Install dependencies
@@ -45,12 +45,12 @@ jobs:
 
           echo "Building $APP_NAME with base-href: $BASEHREF"
 
-          npx nx run shop:build --configuration=production --baseHref=$BASEHREF
+          npx nx run shop:build:static --base-href=$BASEHREF
 
       - name: SPA 404 fallback
         run: |
           set -e
-          DIST_DIR="dist/apps/shop"
+          DIST_DIR="dist/apps/shop/browser"
 
           if [[ ! -f "$DIST_DIR/index.html" ]]; then
             echo "index.html not found in $DIST_DIR"
@@ -64,5 +64,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: dist/apps/shop
+          folder: dist/apps/shop/browser
           token: ${{ secrets.GITHUB_TOKEN }}
